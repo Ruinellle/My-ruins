@@ -1,19 +1,11 @@
-// Energetic BESTIE animation for Hiba: stars + cats + words + hearts + hugs
-// Paste into https://editor.p5js.org/ (sketch.js) and press Play
+// Responsive LANDSCAPE bestie animation for Hiba
+// Fullscreen canvas + bubble title + stars + cats + hearts + pop words + hugs
 
-const NAME = "HIBA";
-const SUB = "BESTIE ENERGY!!!";
+const NAME = "HIBAAA!!!";
+const SUB  = "bestie chaos energy ✨";
 const POP_WORDS = [
-  "SLAY!!",
-  "ICONIC!!",
-  "CUTIE!!",
-  "GORGEOUS!!",
-  "OMG!!!",
-  "BESTIE!!",
-  "HUGS!!!",
-  "LOVE U!!!",
-  "MEOW!!",
-  "STAR!!!",
+  "SLAY!!", "ICONIC!!", "CUTIE!!", "GORGEOUS!!", "OMG!!!",
+  "BESTIE!!", "HUGS!!", "LOVE U!!", "MEOW!!", "STAR!!", "HAHAHA!!"
 ];
 
 let stars = [];
@@ -23,71 +15,73 @@ let cats = [];
 let shake = 0;
 
 function setup() {
-  createCanvas(720, 720);
+  createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
   rectMode(CENTER);
+  noStroke();
+  initScene();
+}
 
-  // Starfield
-  for (let i = 0; i < 220; i++) stars.push(makeStar());
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  initScene();
+}
 
-  // Cat stickers in background corners
+function initScene() {
+  // recreate stars for new size
+  stars = [];
+  for (let i = 0; i < 260; i++) stars.push(makeStar());
+
+  // cat stickers: corners
   cats = [
-    { x: 105, y: 120, s: 1.0, ph: random(TWO_PI) },
-    { x: width - 115, y: 120, s: 0.95, ph: random(TWO_PI) },
-    { x: 115, y: height - 120, s: 0.95, ph: random(TWO_PI) },
-    { x: width - 120, y: height - 120, s: 1.0, ph: random(TWO_PI) },
+    { x: 110, y: 120, s: 1.0, ph: random(TWO_PI) },
+    { x: width - 110, y: 120, s: 0.95, ph: random(TWO_PI) },
+    { x: 110, y: height - 120, s: 0.95, ph: random(TWO_PI) },
+    { x: width - 110, y: height - 120, s: 1.0, ph: random(TWO_PI) }
   ];
 }
 
 function draw() {
-  // energetic wavy gradient background
   drawWavyGradient();
 
-  // stars behind everything
   updateStars();
   drawStars();
 
-  // subtle screen shake when we "pop"
   push();
   translate(random(-shake, shake), random(-shake, shake));
   shake *= 0.88;
 
-  // cat stickers behind text
+  // background cats
   drawCats();
 
-  // main bouncing name
-  let bounce = 28 * sin(frameCount * 0.14);
-  let wob = 10 * sin(frameCount * 0.07);
+  // layout positions based on screen
+  const cx = width / 2;
+  const cy = height / 2;
+  const titleY = cy - min(120, height * 0.15);
+  const subY   = titleY + min(110, height * 0.18);
 
   // glow behind title
-  drawGlow(width / 2, height / 2 - 60 + bounce, 520);
+  drawGlow(cx, titleY, min(width, height) * 0.95);
 
-  // title shadow
-  fill(0, 0, 0, 90);
-  textSize(110);
-  textStyle(BOLD);
-  text(`${NAME}!!!`, width / 2 + 4, height / 2 - 60 + bounce + 4);
-
-  // title
-  shimmerTitle(`${NAME}!!!`, width / 2, height / 2 - 60 + bounce);
+  // bubble title
+  bubbleText(NAME, cx, titleY, clamp(width * 0.12, 64, 120));
 
   // subtitle
   fill(255, 245);
-  textSize(28);
+  textSize(clamp(width * 0.035, 18, 34));
   textStyle(BOLD);
-  text(SUB, width / 2, height / 2 + 35 + wob);
+  text(SUB, cx, subY);
 
-  // instruction-ish cute line
+  // small hint
   fill(255, 220);
-  textSize(20);
   textStyle(NORMAL);
-  text("tap / click for MORE chaos ✨", width / 2, height - 45);
+  textSize(clamp(width * 0.022, 14, 22));
+  text("click / tap for MORE chaos 💖", cx, height - clamp(height * 0.06, 34, 52));
 
-  // spawn pops / hearts automatically
+  // spawns
   if (frameCount % 12 === 0) spawnPop();
   if (frameCount % 3 === 0) spawnHearts(2);
 
-  // update and draw everything
   updateHearts();
   drawHearts();
 
@@ -97,23 +91,23 @@ function draw() {
   pop();
 }
 
-// ---------- INTERACTION: click = burst ----------
+// ---------- interaction ----------
 function mousePressed() {
   shake = 10;
   for (let i = 0; i < 7; i++) spawnPop(true);
-  spawnHearts(18);
+  spawnHearts(22);
   spawnHugs();
 }
 
-// ---------- BACKGROUND ----------
+// ---------- background ----------
 function drawWavyGradient() {
-  // Pink -> purple with wave motion
+  const c1 = color(255, 120, 200);
+  const c2 = color(155, 80, 255);
+
   for (let y = 0; y < height; y++) {
-    let c1 = color(255, 120, 200);
-    let c2 = color(155, 80, 255);
     let t = y / height;
     let wave =
-      0.1 * sin(frameCount * 0.02 + y * 0.03) +
+      0.10 * sin(frameCount * 0.02 + y * 0.03) +
       0.06 * sin(frameCount * 0.016 + y * 0.015);
     let tt = constrain(t + wave, 0, 1);
     stroke(lerpColor(c1, c2, tt));
@@ -124,10 +118,11 @@ function drawWavyGradient() {
   // soft vignette
   for (let i = 0; i < 10; i++) {
     fill(0, 0, 0, 10);
-    rect(width / 2, height / 2, width - i * 40, height - i * 40, 40);
+    rect(width / 2, height / 2, width - i * 50, height - i * 50, 48);
   }
 }
 
+// ---------- stars ----------
 function makeStar() {
   return {
     x: random(width),
@@ -135,7 +130,7 @@ function makeStar() {
     r: random(1.5, 3.5),
     tw: random(TWO_PI),
     sp: random(0.02, 0.06),
-    drift: random(0.2, 0.8),
+    drift: random(0.2, 0.9)
   };
 }
 
@@ -155,17 +150,18 @@ function drawStars() {
     let a = 90 + 140 * (0.5 + 0.5 * sin(s.tw + frameCount * 0.02));
     fill(255, 255, 255, a * 0.65);
     circle(s.x, s.y, s.r);
-    // tiny cross sparkle sometimes
+
+    // cross sparkle sometimes
     if (a > 190) {
       stroke(255, 255, 255, 120);
-      line(s.x - 5, s.y, s.x + 5, s.y);
-      line(s.x, s.y - 5, s.x, s.y + 5);
+      line(s.x - 6, s.y, s.x + 6, s.y);
+      line(s.x, s.y - 6, s.x, s.y + 6);
       noStroke();
     }
   }
 }
 
-// ---------- CATS ----------
+// ---------- cats ----------
 function drawCats() {
   for (let c of cats) {
     let bob = 6 * sin(frameCount * 0.05 + c.ph);
@@ -178,11 +174,10 @@ function drawCats() {
 }
 
 function drawCatSticker(x, y) {
-  // Cute sticker-style cat face
   push();
   translate(x, y);
 
-  // sticker shadow
+  // shadow
   fill(0, 0, 0, 35);
   ellipse(4, 6, 150, 120);
 
@@ -229,7 +224,7 @@ function drawCatSticker(x, y) {
   line(55, 18, 20, 16);
   noStroke();
 
-  // tiny heart on forehead
+  // forehead heart
   fill(255, 90, 155, 220);
   textSize(22);
   text("♥", 0, -38);
@@ -237,30 +232,38 @@ function drawCatSticker(x, y) {
   pop();
 }
 
-// ---------- TITLE SHIMMER ----------
-function shimmerTitle(txt, x, y) {
+// ---------- bubble text ----------
+function bubbleText(txt, x, y, size) {
   push();
-  textSize(110);
   textStyle(BOLD);
+  textSize(size);
 
-  // base
+  // thick bubble outline (multiple layers)
+  let outline = max(6, size * 0.10);
+
+  // outer outline: dark pink/purple
+  fill(90, 20, 120, 220);
+  for (let a = 0; a < TWO_PI; a += TWO_PI / 14) {
+    text(txt, x + cos(a) * outline, y + sin(a) * outline);
+  }
+
+  // mid outline: hot pink
+  fill(255, 70, 150, 220);
+  for (let a = 0; a < TWO_PI; a += TWO_PI / 14) {
+    text(txt, x + cos(a) * outline * 0.55, y + sin(a) * outline * 0.55);
+  }
+
+  // main fill: white
   fill(255, 255, 255, 245);
   text(txt, x, y);
 
-  // colored outline
-  stroke(255, 90, 155, 200);
-  strokeWeight(6);
-  noFill();
-  text(txt, x, y);
-  noStroke();
-
   // shimmer sweep
-  let sweep = ((frameCount * 10) % (width + 500)) - 250;
+  let sweep = (frameCount * 10) % (width + 500) - 250;
   for (let i = -18; i <= 18; i++) {
     let dx = i * 1.2;
-    let dist = abs(x + dx - sweep);
-    let a = map(dist, 0, 260, 190, 0);
-    a = constrain(a, 0, 190);
+    let dist = abs((x + dx) - sweep);
+    let a = map(dist, 0, 260, 180, 0);
+    a = constrain(a, 0, 180);
     fill(255, 255, 255, a);
     text(txt, x + dx * 0.55, y - 2);
   }
@@ -271,49 +274,49 @@ function shimmerTitle(txt, x, y) {
 function drawGlow(x, y, size) {
   for (let i = 0; i < 14; i++) {
     fill(255, 170, 215, 14);
-    ellipse(x, y, size + i * 55);
+    ellipse(x, y, size + i * 65);
   }
 }
 
-// ---------- POP WORDS + HUGS ----------
+// ---------- pops + hugs ----------
 function spawnPop(extraChaos = false) {
   let w = random(POP_WORDS);
-  let isHug = random() < 0.22 || extraChaos;
+  let isHug = (random() < 0.22) || extraChaos;
 
   pops.push({
     txt: isHug ? "HUGS!!" : w,
-    x: random(width * 0.2, width * 0.8),
-    y: random(height * 0.25, height * 0.75),
-    vx: random(-1.5, 1.5),
-    vy: random(-2.5, -0.6),
+    x: random(width * 0.18, width * 0.82),
+    y: random(height * 0.25, height * 0.78),
+    vx: random(-1.8, 1.8),
+    vy: random(-2.8, -0.7),
     a: 255,
-    s: random(22, 42),
+    s: random(clamp(width * 0.03, 20, 38), clamp(width * 0.055, 30, 56)),
     rot: random(-0.2, 0.2),
     spin: random(-0.02, 0.02),
     col: random([
       color(255, 255, 255),
       color(255, 240, 120),
       color(180, 255, 255),
-      color(255, 170, 220),
-    ]),
+      color(255, 170, 220)
+    ])
   });
 
-  if (pops.length > 60) pops.splice(0, pops.length - 60);
+  if (pops.length > 70) pops.splice(0, pops.length - 70);
 }
 
 function spawnHugs() {
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     pops.push({
       txt: "HUGS!!",
-      x: width / 2 + random(-120, 120),
-      y: height / 2 + random(-60, 60),
-      vx: random(-2, 2),
-      vy: random(-3.5, -1.2),
+      x: width / 2 + random(-150, 150),
+      y: height / 2 + random(-80, 80),
+      vx: random(-2.2, 2.2),
+      vy: random(-4.0, -1.5),
       a: 255,
-      s: random(30, 48),
+      s: random(clamp(width * 0.04, 26, 44), clamp(width * 0.06, 34, 60)),
       rot: random(-0.2, 0.2),
       spin: random(-0.03, 0.03),
-      col: color(255, 255, 255),
+      col: color(255, 255, 255)
     });
   }
 }
@@ -323,10 +326,9 @@ function updatePops() {
     let p = pops[i];
     p.x += p.vx;
     p.y += p.vy;
-    p.vy += 0.06; // gravity
+    p.vy += 0.06;
     p.a -= 4.2;
     p.rot += p.spin;
-
     if (p.a <= 0) pops.splice(i, 1);
   }
 }
@@ -338,35 +340,35 @@ function drawPops() {
     rotate(p.rot);
 
     // glow
-    fill(255, 255, 255, p.a * 0.15);
+    fill(255, 255, 255, p.a * 0.16);
     textSize(p.s + 10);
+    textStyle(BOLD);
     text(p.txt, 2, 2);
 
     // main
     fill(red(p.col), green(p.col), blue(p.col), p.a);
     textSize(p.s);
-    textStyle(BOLD);
     text(p.txt, 0, 0);
 
     pop();
   }
 }
 
-// ---------- MINI HEARTS ----------
+// ---------- mini hearts ----------
 function spawnHearts(n) {
   for (let i = 0; i < n; i++) {
     hearts.push({
-      x: width / 2 + random(-40, 40),
-      y: height / 2 + random(-20, 20),
-      vx: random(-3.5, 3.5),
-      vy: random(-4.5, -0.8),
+      x: width / 2 + random(-60, 60),
+      y: height / 2 + random(-30, 30),
+      vx: random(-3.8, 3.8),
+      vy: random(-5.0, -1.0),
       a: 255,
-      s: random(14, 26),
+      s: random(clamp(width * 0.018, 14, 24), clamp(width * 0.03, 18, 32)),
       wob: random(0.04, 0.09),
-      ph: random(TWO_PI),
+      ph: random(TWO_PI)
     });
   }
-  if (hearts.length > 400) hearts.splice(0, hearts.length - 400);
+  if (hearts.length > 450) hearts.splice(0, hearts.length - 450);
 }
 
 function updateHearts() {
@@ -374,7 +376,7 @@ function updateHearts() {
     let h = hearts[i];
     h.x += h.vx + 1.2 * sin(frameCount * h.wob + h.ph);
     h.y += h.vy;
-    h.vy += 0.1;
+    h.vy += 0.10;
     h.a -= 4.0;
     if (h.a <= 0) hearts.splice(i, 1);
   }
@@ -396,3 +398,6 @@ function drawHearts() {
     pop();
   }
 }
+
+// ---------- helpers ----------
+function clamp(v, lo, hi) { return max(lo, min(hi, v)); }
